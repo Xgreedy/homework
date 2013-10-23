@@ -15,14 +15,9 @@ The homework is divided by different courses.
 ##### Network storage curriculum
 
 1, MLCM -- Multiple level Cache Management.
-          I/O Request
-		      |
-			  |
-			   \
-   Buffer1 at applicaition level 
-                             \
-							  \ iSCSI, IfiniBand, Fibre Channel
-							   --------------------------------> Buffer2 at storage level
-							                                                         \
-																					  \
-																					   ----> Storage device
+   I/O Request -> Buffer1 at applicaition level 
+   
+   iSCSI, IfiniBand, Fibre Channel
+   --------------------------------> Buffer2 at storage level
+   
+   ---> Storage device
