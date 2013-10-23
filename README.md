@@ -1,5 +1,5 @@
-Homework
-========
+# Homework
+
 
 Trivial homework stuffs finished by Weiwei Jia <harryxiyou@gmail.com>
 
@@ -12,10 +12,10 @@ https://code.google.com/p/homeworkxy/
 
 The homework is divided by different courses.
 
-##### Network storage curriculum
+* Network storage curriculum
 
-1, MLCM -- Multiple level Cache Management.
-   a, I/O sequence
+1. MLCM -- Multiple level Cache Management.
+   * I/O sequence
    I/O Request -> Buffer1 at applicaition level 
    
    iSCSI, IfiniBand, Fibre Channel
@@ -23,6 +23,6 @@ The homework is divided by different courses.
    
    ---> Storage device
 
-   b, HOWTO
-   * [Framework image](https://github.com/HarryWei/homework/blob/master/images/MLCM.jpg)
+   * HOWTO
+   [Framework image](https://github.com/HarryWei/homework/blob/master/images/MLCM.jpg)
 
