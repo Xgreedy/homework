@@ -12,10 +12,10 @@ The homework is divided by different courses.
 
 #### Network storage curriculum
 * MLCM is Multiple level Cache Management. <br>
- [Framework image](https://github.com/HarryWei/homework/blob/master/images/MLCM.jpg)
- 1.I/O sequence <br>
+[Framework image](https://github.com/HarryWei/homework/blob/master/images/MLCM.jpg) <br>
+ 1. I/O sequence <br>
  I/O Request -> Buffer1 at applicaition level <br>
  -> (iSCSI, IfiniBand, Fibre Channel) Buffer2 at storage level <br>
  -> Storage device <br>
- * HOWTO
+ 2. HOWTO
 
