@@ -4,12 +4,12 @@
 #include <stdio.h>
 #include <errno.h>
 enum {
-    LCRTE_OK = 0,
-    LCRTE_INVAL,
-    LCRTE_NOT_FOUND = 1000,
-    LCRTE_NO_TABLE,
-    LCRTE_NO_CONFIG,
-    LCRTE_NOT_SUPPORT,
+    MLCM_OK = 0,
+    MLCM_INVAL,
+    MLCM_NOT_FOUND = 1000,
+    MLCM_NO_TABLE,
+    MLCM_NO_CONFIG,
+    MLCM_NOT_SUPPORT,
 };
 
 #ifdef __MLCM_DEBUG__
