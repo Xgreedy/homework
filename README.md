@@ -21,15 +21,15 @@ The homework is divided by different courses.
     Develop a library named libmlcm and it has some interfaces for
 	users to call to check each way's performance. The interfaces are
 	as follows.
-	1. int mlcm_init(struct mlcm_ctrl **, uint32_t buf1_size, uint32_t buf2_size)
+	* int mlcm_init(struct mlcm_ctrl **, uint32_t buf1_size, uint32_t buf2_size)
 	   Init MLCM, see mlcm structure for details.
-	2. uint32_t mlcm_write(struct mlcm_ctrl *, int fd, char *buf, int count,
+	* uint32_t mlcm_write(struct mlcm_ctrl *, int fd, char *buf, int count,
 			               int pos, uint8_t mode)
 	   mode has two ways, one is write-through and another one is
 	   write-back.
-	3. uint32_t mlcm_read(struct mlcm_ctrl *, int fd, char *buf,
+	* uint32_t mlcm_read(struct mlcm_ctrl *, int fd, char *buf,
 			              int count, int pos, uint8_t mode)
 	   mode has two ways, one is pre-read way and another one is Least
 	   Recently Used (LRU) way.
-	4. mlcm_deinit(struct mlcm_ctrl *)
+	* mlcm_deinit(struct mlcm_ctrl *)
 	   Destroy MLCM.
