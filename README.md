@@ -24,13 +24,17 @@ The homework is divided by different courses.
     1, uint32_t mlcm_init(struct mlcm_ctrl **, uint32_t buf1_size, <br>
 			           uint32_t buf2_size) <br>
 	   Init MLCM, see mlcm structure for details. <br>
-    2, uint32_t mlcm_write(struct mlcm_ctrl *, int fd, char *buf, int count, <br>
+    2, uint32_t mlcm_write(struct mlcm_ctrl *, char *buf, int count, <br>
 			               int pos, uint8_t mode) <br>
 	   mode has two ways, one is write-through and another one is <br>
 	   write-back. <br>
-    3, uint32_t mlcm_read(struct mlcm_ctrl *, int fd, char *buf, <br>
+    3, uint32_t mlcm_read(struct mlcm_ctrl *, char *buf, <br>
 			              int count, int pos, uint8_t mode) <br>
 	   mode has two ways, one is pre-read way and another one is Least <br>
 	   Recently Used (LRU) way. <br>
     4, uint32_t mlcm_deinit(struct mlcm_ctrl *) <br>
-	   Destroy MLCM.
+	   Destroy MLCM. <br>
+* RAIDSIM <br>
+   Mock RAID in RAM. <br>
+* NOTE: we just organize storage device as a RAID pool, the address of <br>
+	    this RAID pool is from 0x0000000000000000~0xffffffffffffffff.
