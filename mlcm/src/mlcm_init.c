@@ -35,6 +35,8 @@ int mlcm_init(struct mlcm_ctrl **ctrl,
 		ret = -1;
 		goto out;
 	}
+	*ctrl->buf1.buf_size = buf1_size;
+	*ctrl->buf1.buf_used = 0;
   *ctrl->buf2.buf = (char *) g_malloc(sizeof(char) * buf2_size);
 	if (NULL == *ctrl->buf1.buf) {
 		fprintf(stderr, "Allocate Error!\n");
@@ -43,6 +45,8 @@ int mlcm_init(struct mlcm_ctrl **ctrl,
 		ret = -1;
 		goto out;
 	}
+	*ctrl->buf2.buf_size = buf2_size;
+	*ctrl->buf2.buf_used = 0;
 
 out:
   return ret;
