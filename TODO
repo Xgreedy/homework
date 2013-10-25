@@ -1,4 +1,5 @@
 mlcm
 ====
 1, write_throgh, write_back functions.
-2, raid create functions.
+2, preread, lru functions.
+3, raid create functions.
