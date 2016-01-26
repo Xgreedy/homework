@@ -90,6 +90,9 @@ int main(int argc, char **argv) {
 	printf("dest is %s\nasm_dest is %s\n", dest, _dest);
 #endif
     ret = strcmp(dest, _dest);
+#ifdef HW1_DEBUG__
+	printf("strcmp return is %d\n", ret);
+#endif
 out:
 	return ret;
 }
