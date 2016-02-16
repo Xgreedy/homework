@@ -28,7 +28,7 @@ static inline char *sub_str(char *src, int s_idx, int e_idx) {
 		return NULL;
 	}
 	memset(dest, '\0', dest_len);
-    strncpy(dest, &src[s_idx - 1], dest_len - 1);
+    strncpy(dest, &src[s_idx], dest_len - 1);
 	return dest;
 }
 
@@ -44,9 +44,9 @@ static inline char *asm_sub_str(char *src, int s_idx, int e_idx) {
 	}
 	memset(dest, '\0', dest_len);
 	dest_len = dest_len - 1;
-    char *_src = &src[s_idx - 1];
+    char *_src = &src[s_idx];
 	//TODO
-	src[e_idx] = '\0';
+	src[e_idx + 1] = '\0';
 	__asm__ __volatile__ ("cld\n\t"
 						  "rep\n\t"
 						  "movsl"

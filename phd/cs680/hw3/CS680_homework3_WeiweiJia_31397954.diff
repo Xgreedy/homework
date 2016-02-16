@@ -1,0 +1,39 @@
+diff -urN linux-4.4.1/arch/x86/kernel/setup.c linux-4.4.1_changed/arch/x86/kernel/setup.c
+--- linux-4.4.1/arch/x86/kernel/setup.c	2016-01-31 14:29:37.000000000 -0500
++++ linux-4.4.1_changed/arch/x86/kernel/setup.c	2016-02-09 15:23:49.155660456 -0500
+@@ -858,6 +858,7 @@
+ 	 * RAM in e820. All other memory is free game.
+ 	 */
+ 
++	printk(KERN_INFO "999 dbg - Weiwei Jia: Command line in setup_arch() is : %s\n", boot_command_line);
+ #ifdef CONFIG_X86_32
+ 	memcpy(&boot_cpu_data, &new_cpu_data, sizeof(new_cpu_data));
+ 
+@@ -881,7 +882,7 @@
+ 	 */
+ 	__flush_tlb_all();
+ #else
+-	printk(KERN_INFO "Command line: %s\n", boot_command_line);
++	//printk(KERN_INFO "999 dbg - Weiwei Jia: Command line in setup_arch() is : %s\n", boot_command_line);
+ #endif
+ 
+ 	/*
+diff -urN linux-4.4.1/init/main.c linux-4.4.1_changed/init/main.c
+--- linux-4.4.1/init/main.c	2016-01-31 14:29:37.000000000 -0500
++++ linux-4.4.1_changed/init/main.c	2016-02-09 15:24:37.384871649 -0500
+@@ -525,6 +525,7 @@
+ 	boot_cpu_init();
+ 	page_address_init();
+ 	pr_notice("%s", linux_banner);
++	printk(KERN_INFO "999dbg - Weiwei Jia: linux_banner in start_kernel() is (--%s--)\n", linux_banner);
+ 	setup_arch(&command_line);
+ 	mm_init_cpumask(&init_mm);
+ 	setup_command_line(command_line);
+@@ -536,6 +537,7 @@
+ 	page_alloc_init();
+ 
+ 	pr_notice("Kernel command line: %s\n", boot_command_line);
++	printk(KERN_INFO "999dbg - Weiwei Jia: Kernel boot command line in start_kernel() is (--%s--)\n", boot_command_line);
+ 	parse_early_param();
+ 	after_dashes = parse_args("Booting kernel",
+ 				  static_command_line, __start___param,
