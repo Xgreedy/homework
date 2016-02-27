@@ -1,0 +1,202 @@
+diff -ruN linux-4.4.2/arch/x86/mm/init_32.c linux-4.4.2_changed/arch/x86/mm/init_32.c
+--- linux-4.4.2/arch/x86/mm/init_32.c	2016-02-17 15:31:25.000000000 -0500
++++ linux-4.4.2_changed/arch/x86/mm/init_32.c	2016-02-20 10:10:47.548247464 -0500
+@@ -820,6 +820,9 @@
+ 
+ 	if (boot_cpu_data.wp_works_ok < 0)
+ 		test_wp_bit();
++	//Added by Weiwei Jia
++	printk("Weiwei Jia - 999dbg - show_mem() in init_mem for 32bits.\n");
++	show_mem(0);
+ }
+ 
+ #ifdef CONFIG_MEMORY_HOTPLUG
+diff -ruN linux-4.4.2/arch/x86/mm/init_64.c linux-4.4.2_changed/arch/x86/mm/init_64.c
+--- linux-4.4.2/arch/x86/mm/init_64.c	2016-02-17 15:31:25.000000000 -0500
++++ linux-4.4.2_changed/arch/x86/mm/init_64.c	2016-02-20 10:10:47.548247464 -0500
+@@ -1060,6 +1060,8 @@
+ 			 PAGE_SIZE, KCORE_OTHER);
+ 
+ 	mem_init_print_info(NULL);
++	printk("Weiwei Jia - 999dbg - show_mem() in init_mem for 64bits.\n");
++	show_mem(0);
+ }
+ 
+ #ifdef CONFIG_DEBUG_RODATA
+diff -ruN linux-4.4.2/lib/show_mem.c linux-4.4.2_changed/lib/show_mem.c
+--- linux-4.4.2/lib/show_mem.c	2016-02-17 15:31:25.000000000 -0500
++++ linux-4.4.2_changed/lib/show_mem.c	2016-02-20 10:11:31.681373476 -0500
+@@ -14,7 +14,8 @@
+ 	pg_data_t *pgdat;
+ 	unsigned long total = 0, reserved = 0, highmem = 0;
+ 
+-	printk("Mem-Info:\n");
++	printk("Weiwei Jia - 999dbg - enter show_mem()\n");
++	printk("Weiwei Jia - 999dbg - Mem-Info:\n");
+ 	show_free_areas(filter);
+ 
+ 	for_each_online_pgdat(pgdat) {
+@@ -36,17 +37,17 @@
+ 		pgdat_resize_unlock(pgdat, &flags);
+ 	}
+ 
+-	printk("%lu pages RAM\n", total);
+-	printk("%lu pages HighMem/MovableOnly\n", highmem);
+-	printk("%lu pages reserved\n", reserved);
++	printk("Weiwei Jia - 999dbg - %lu pages RAM\n", total);
++	printk("Weiwei Jia - 999dbg - %lu pages HighMem/MovableOnly\n", highmem);
++	printk("Weiwei Jia - 999dbg - %lu pages reserved\n", reserved);
+ #ifdef CONFIG_CMA
+-	printk("%lu pages cma reserved\n", totalcma_pages);
++	printk("Weiwei Jia - 999 dbg - %lu pages cma reserved\n", totalcma_pages);
+ #endif
+ #ifdef CONFIG_QUICKLIST
+-	printk("%lu pages in pagetable cache\n",
++	printk("Weiwei Jia - 999 dbg - %lu pages in pagetable cache\n",
+ 		quicklist_total_size());
+ #endif
+ #ifdef CONFIG_MEMORY_FAILURE
+-	printk("%lu pages hwpoisoned\n", atomic_long_read(&num_poisoned_pages));
++	printk("Weiwei Jia - 999 dbg - %lu pages hwpoisoned\n", atomic_long_read(&num_poisoned_pages));
+ #endif
+ }
+diff -ruN linux-4.4.2/mm/hugetlb.c linux-4.4.2_changed/mm/hugetlb.c
+--- linux-4.4.2/mm/hugetlb.c	2016-02-17 15:31:25.000000000 -0500
++++ linux-4.4.2_changed/mm/hugetlb.c	2016-02-20 10:13:13.863970589 -0500
+@@ -2892,7 +2892,7 @@
+ 
+ 	for_each_node_state(nid, N_MEMORY)
+ 		for_each_hstate(h)
+-			pr_info("Node %d hugepages_total=%u hugepages_free=%u hugepages_surp=%u hugepages_size=%lukB\n",
++			pr_info("Weiwei Jia - 999dbg - Node %d hugepages_total=%u hugepages_free=%u hugepages_surp=%u hugepages_size=%lukB\n",
+ 				nid,
+ 				h->nr_huge_pages_node[nid],
+ 				h->free_huge_pages_node[nid],
+diff -ruN linux-4.4.2/mm/page_alloc.c linux-4.4.2_changed/mm/page_alloc.c
+--- linux-4.4.2/mm/page_alloc.c	2016-02-17 15:31:25.000000000 -0500
++++ linux-4.4.2_changed/mm/page_alloc.c	2016-02-20 10:13:13.863970589 -0500
+@@ -3581,7 +3581,7 @@
+ static inline void show_node(struct zone *zone)
+ {
+ 	if (IS_ENABLED(CONFIG_NUMA))
+-		printk("Node %d ", zone_to_nid(zone));
++		printk("Weiwei Jia - 999dbg - Node %d ", zone_to_nid(zone));
+ }
+ 
+ void si_meminfo(struct sysinfo *val)
+@@ -3671,6 +3671,26 @@
+ }
+ 
+ /*
++ * Show buddy info here
++ *
++ * Added by Weiwei Jia <wj47@njit.edu> for CS680 course
++ */
++void show_buddyinfo(struct zone *zone) {
++	unsigned int order;
++	printk("Weiwei Jia - 999dbg - Buddyinfo printed begin...\n");
++	for_each_populated_zone(zone) {
++		show_node(zone);
++		printk(" %s ", zone->name);
++		for (order = 0; order < MAX_ORDER; order++) {
++			struct free_area *area = &zone->free_area[order];
++			printk("%lu ", area->nr_free);
++		}
++		printk("\n");
++	}
++	printk("Weiwei Jia - 999dbg - Buddyinfo printed end.\n");
++}
++
++/*
+  * Show free area list (used inside shift_scroll-lock stuff)
+  * We also calculate the percentage fragmentation. We do this by counting the
+  * memory on each free list with the exception of the first item on the list.
+@@ -3693,12 +3713,12 @@
+ 			free_pcp += per_cpu_ptr(zone->pageset, cpu)->pcp.count;
+ 	}
+ 
+-	printk("active_anon:%lu inactive_anon:%lu isolated_anon:%lu\n"
+-		" active_file:%lu inactive_file:%lu isolated_file:%lu\n"
+-		" unevictable:%lu dirty:%lu writeback:%lu unstable:%lu\n"
+-		" slab_reclaimable:%lu slab_unreclaimable:%lu\n"
+-		" mapped:%lu shmem:%lu pagetables:%lu bounce:%lu\n"
+-		" free:%lu free_pcp:%lu free_cma:%lu\n",
++	printk("Weiwei Jia - 999dbg - active_anon:%lu inactive_anon:%lu isolated_anon:%lu\n"
++		" Weiwei Jia - 999dbg - active_file:%lu inactive_file:%lu isolated_file:%lu\n"
++		" Weiwei Jia - 999dbg - unevictable:%lu dirty:%lu writeback:%lu unstable:%lu\n"
++		" Weiwei Jia - 999dbg - slab_reclaimable:%lu slab_unreclaimable:%lu\n"
++		" Weiwei Jia - 999dbg - mapped:%lu shmem:%lu pagetables:%lu bounce:%lu\n"
++		" Weiwei Jia - 999dbg - free:%lu free_pcp:%lu free_cma:%lu\n",
+ 		global_page_state(NR_ACTIVE_ANON),
+ 		global_page_state(NR_INACTIVE_ANON),
+ 		global_page_state(NR_ISOLATED_ANON),
+@@ -3730,7 +3750,7 @@
+ 			free_pcp += per_cpu_ptr(zone->pageset, cpu)->pcp.count;
+ 
+ 		show_node(zone);
+-		printk("%s"
++		printk("Weiwei Jia - 999dbg - %s"
+ 			" free:%lukB"
+ 			" min:%lukB"
+ 			" low:%lukB"
+@@ -3795,7 +3815,7 @@
+ 			K(zone_page_state(zone, NR_PAGES_SCANNED)),
+ 			(!zone_reclaimable(zone) ? "yes" : "no")
+ 			);
+-		printk("lowmem_reserve[]:");
++		printk("Weiwei Jia - 999dbg - lowmem_reserve[]:");
+ 		for (i = 0; i < MAX_NR_ZONES; i++)
+ 			printk(" %ld", zone->lowmem_reserve[i]);
+ 		printk("\n");
+@@ -3809,7 +3829,7 @@
+ 		if (skip_free_areas_node(filter, zone_to_nid(zone)))
+ 			continue;
+ 		show_node(zone);
+-		printk("%s: ", zone->name);
++		printk("Weiwei Jia - 999dbg - %s: ", zone->name);
+ 
+ 		spin_lock_irqsave(&zone->lock, flags);
+ 		for (order = 0; order < MAX_ORDER; order++) {
+@@ -3827,16 +3847,19 @@
+ 		}
+ 		spin_unlock_irqrestore(&zone->lock, flags);
+ 		for (order = 0; order < MAX_ORDER; order++) {
+-			printk("%lu*%lukB ", nr[order], K(1UL) << order);
++			printk("Weiwei Jia - 999dbg - %lu*%lukB ", nr[order], K(1UL) << order);
+ 			if (nr[order])
+ 				show_migration_types(types[order]);
+ 		}
+ 		printk("= %lukB\n", K(total));
+ 	}
+ 
++	//added by Weiwei Jia
++	show_buddyinfo(zone);
++
+ 	hugetlb_show_meminfo();
+ 
+-	printk("%ld total pagecache pages\n", global_page_state(NR_FILE_PAGES));
++	printk("Weiwei Jia - 999dbg - %ld total pagecache pages\n", global_page_state(NR_FILE_PAGES));
+ 
+ 	show_swap_cache_info();
+ }
+diff -ruN linux-4.4.2/mm/swap_state.c linux-4.4.2_changed/mm/swap_state.c
+--- linux-4.4.2/mm/swap_state.c	2016-02-17 15:31:25.000000000 -0500
++++ linux-4.4.2_changed/mm/swap_state.c	2016-02-20 10:13:13.867970691 -0500
+@@ -63,13 +63,13 @@
+ 
+ void show_swap_cache_info(void)
+ {
+-	printk("%lu pages in swap cache\n", total_swapcache_pages());
+-	printk("Swap cache stats: add %lu, delete %lu, find %lu/%lu\n",
++	printk("Weiwei Jia - 999dbg - %lu pages in swap cache\n", total_swapcache_pages());
++	printk("Weiwei Jia - 999dbg - Swap cache stats: add %lu, delete %lu, find %lu/%lu\n",
+ 		swap_cache_info.add_total, swap_cache_info.del_total,
+ 		swap_cache_info.find_success, swap_cache_info.find_total);
+-	printk("Free swap  = %ldkB\n",
++	printk("Weiwei Jia - 999dbg - Free swap  = %ldkB\n",
+ 		get_nr_swap_pages() << (PAGE_SHIFT - 10));
+-	printk("Total swap = %lukB\n", total_swap_pages << (PAGE_SHIFT - 10));
++	printk("Weiwei Jia - 999dbg - Total swap = %lukB\n", total_swap_pages << (PAGE_SHIFT - 10));
+ }
+ 
+ /*

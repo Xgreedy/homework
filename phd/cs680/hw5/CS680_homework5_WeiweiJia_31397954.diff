@@ -1,0 +1,262 @@
+diff -Nur linux-4.4.2/init/main.c linux-4.4.2_hw5/init/main.c
+--- linux-4.4.2/init/main.c	2016-02-17 15:31:25.000000000 -0500
++++ linux-4.4.2_hw5/init/main.c	2016-02-27 15:01:59.951809545 -0500
+@@ -68,7 +68,8 @@
+ #include <linux/kmemcheck.h>
+ #include <linux/sfi.h>
+ #include <linux/shmem_fs.h>
+-#include <linux/slab.h>
++//#include <linux/slab.h>
++#include "../mm/slab.h"
+ #include <linux/perf_event.h>
+ #include <linux/file.h>
+ #include <linux/ptrace.h>
+@@ -90,6 +91,10 @@
+ 
+ static int kernel_init(void *);
+ 
++//added by Weiwei Jia
++extern void __cache_show(struct kmem_cache *s);
++extern void __slab_show(void);
++
+ extern void init_IRQ(void);
+ extern void fork_init(void);
+ extern void radix_tree_init(void);
+@@ -383,6 +388,9 @@
+ 
+ static __initdata DECLARE_COMPLETION(kthreadd_done);
+ 
++//added by Weiwei Jia
++static int __print_slabinfo(void);
++
+ static noinline void __init_refok rest_init(void)
+ {
+ 	int pid;
+@@ -395,6 +403,7 @@
+ 	 * we schedule it before we create kthreadd, will OOPS.
+ 	 */
+ 	kernel_thread(kernel_init, NULL, CLONE_FS);
++	__print_slabinfo();
+ 	numa_default_policy();
+ 	pid = kernel_thread(kthreadd, NULL, CLONE_FS | CLONE_FILES);
+ 	rcu_read_lock();
+@@ -929,6 +938,47 @@
+ 
+ static noinline void __init kernel_init_freeable(void);
+ 
++//added by Weiwei Jia for CS680 homework #5
++#if 0
++static void __print_slabinfo_header(void) {
++	printk("Weiwei Jia - slabinfo - version: 2.1 (statistics)\n");
++	printk("Weiwei Jia - slabinfo - version: 2.1\n");
++	printk("# name            <active_objs> <num_objs> <objsize> <objperslab> <pagesperslab>");
++	printk(" : tunables <limit> <batchcount> <sharedfactor>");
++	printk(" : slabdata <active_slabs> <num_slabs> <sharedavail>");
++	printk(" : globalstat <listallocs> <maxobjs> <grown> <reaped> <error> <maxfreeable> <nodeallocs> <remotefrees> <alienoverflow>");
++	printk(" : cpustat <allochit> <allocmiss> <freehit> <freemiss>\n");
++	return;
++}
++#endif
++static int __print_slabinfo(void) {
++	int i = 0;
++
++	printk("Weiwei Jia - print slabinfo for CS680 homework #5.\n");
++	printk("Weiwei Jia - Start.............................................\n");
++	//__print_slabinfo_header();
++	printk("Weiwei Jia - slabinfo in slab_caches...");
++	__slab_show();
++	printk("Weiwei Jia - slabinfo in kmalloc_caches...");
++	for (i = 0; i < KMALLOC_SHIFT_HIGH + 1; i++) {
++		struct kmem_cache *s = kmalloc_caches[i];
++		if (s) {
++			//printk("Weiwei Jia - name: %s, object size: %d,  refcount: %d\n", s->name, s->object_size, s->refcount);
++			//call API directly.
++			__cache_show(s);
++		} else {
++			printk("Weiwei Jia - homework #5, kmalloc_caches[%d] is NULL!\n", i);
++		}
++
++	}
++	printk("Weiwei Jia - print slabinfo for CS680 homework #5 ");
++	printk("Weiwei Jia - End.............................................\n");
++
++	return 0;
++}
++
++//end added by Weiwei Jia
++
+ static int __ref kernel_init(void *unused)
+ {
+ 	int ret;
+@@ -967,8 +1017,9 @@
+ 	if (!try_to_run_init_process("/sbin/init") ||
+ 	    !try_to_run_init_process("/etc/init") ||
+ 	    !try_to_run_init_process("/bin/init") ||
+-	    !try_to_run_init_process("/bin/sh"))
++	    !try_to_run_init_process("/bin/sh")) {
+ 		return 0;
++	}
+ 
+ 	panic("No working init found.  Try passing init= option to kernel. "
+ 	      "See Linux Documentation/init.txt for guidance.");
+diff -Nur linux-4.4.2/mm/slab.c linux-4.4.2_hw5/mm/slab.c
+--- linux-4.4.2/mm/slab.c	2016-02-17 15:31:25.000000000 -0500
++++ linux-4.4.2_hw5/mm/slab.c	2016-02-27 15:01:59.571800203 -0500
+@@ -4017,6 +4017,40 @@
+ #endif
+ }
+ 
++//added by Weiwei Jia for cs680 course, we do not need seq_file
++void __slabinfo_show_stats(struct kmem_cache *cachep)
++{
++#if STATS
++	{			/* node stats */
++		unsigned long high = cachep->high_mark;
++		unsigned long allocs = cachep->num_allocations;
++		unsigned long grown = cachep->grown;
++		unsigned long reaped = cachep->reaped;
++		unsigned long errors = cachep->errors;
++		unsigned long max_freeable = cachep->max_freeable;
++		unsigned long node_allocs = cachep->node_allocs;
++		unsigned long node_frees = cachep->node_frees;
++		unsigned long overflows = cachep->node_overflow;
++
++		printk(" : globalstat %7lu %6lu %5lu %4lu "
++			   "%4lu %4lu %4lu %4lu %4lu",
++			   allocs, high, grown,
++			   reaped, errors, max_freeable, node_allocs,
++			   node_frees, overflows);
++	}
++	/* cpu stats */
++	{
++		unsigned long allochit = atomic_read(&cachep->allochit);
++		unsigned long allocmiss = atomic_read(&cachep->allocmiss);
++		unsigned long freehit = atomic_read(&cachep->freehit);
++		unsigned long freemiss = atomic_read(&cachep->freemiss);
++
++		printk(" : cpustat %6lu %6lu %6lu %6lu",
++			   allochit, allocmiss, freehit, freemiss);
++	}
++#endif
++}
++
+ #define MAX_SLABINFO_WRITE 128
+ /**
+  * slabinfo_write - Tuning for the slab allocator
+diff -Nur linux-4.4.2/mm/slab_common.c linux-4.4.2_hw5/mm/slab_common.c
+--- linux-4.4.2/mm/slab_common.c	2016-02-17 15:31:25.000000000 -0500
++++ linux-4.4.2_hw5/mm/slab_common.c	2016-02-27 15:02:00.319818592 -0500
+@@ -4,6 +4,7 @@
+  * (C) 2012 Christoph Lameter <cl@linux.com>
+  */
+ #include <linux/slab.h>
++#include "slab.h"
+ 
+ #include <linux/mm.h>
+ #include <linux/poison.h>
+@@ -23,7 +24,8 @@
+ #define CREATE_TRACE_POINTS
+ #include <trace/events/kmem.h>
+ 
+-#include "slab.h"
++
++extern void __slabinfo_show_stats(struct kmem_cache *s);
+ 
+ enum slab_state slab_state;
+ LIST_HEAD(slab_caches);
+@@ -1053,6 +1055,32 @@
+ 	seq_putc(m, '\n');
+ }
+ 
++//added by Weiwei Jia
++static void __print_slabinfo_header(void)
++{
++	/*
++	 * Output format version, so at least we can change it
++	 * without _too_ many complaints.
++	 */
++//#ifdef CONFIG_DEBUG_SLAB
++//	seq_puts(m, "slabinfo - version: 2.1 (statistics)\n");
++//#else
++	printk("Weiwei Jia - slabinfo - version: 2.1\n");
++//#endif
++	printk("Weiwei Jia # name            <active_objs> <num_objs> <objsize> "
++		 "<objperslab> <pagesperslab>");
++	printk(" : tunables <limit> <batchcount> <sharedfactor>");
++	printk(" : slabdata <active_slabs> <num_slabs> <sharedavail>");
++#if 0
++#ifdef CONFIG_DEBUG_SLAB
++	seq_puts(m, " : globalstat <listallocs> <maxobjs> <grown> <reaped> "
++		 "<error> <maxfreeable> <nodeallocs> <remotefrees> <alienoverflow>");
++	seq_puts(m, " : cpustat <allochit> <allocmiss> <freehit> <freemiss>");
++#endif
++#endif
++	printk("\n");
++}
++
+ void *slab_start(struct seq_file *m, loff_t *pos)
+ {
+ 	mutex_lock(&slab_mutex);
+@@ -1111,6 +1139,28 @@
+ 	seq_putc(m, '\n');
+ }
+ 
++//added by Weiwei Jia for CS680 course, we do not need seq_file
++void __cache_show(struct kmem_cache *s)
++{
++	struct slabinfo sinfo;
++
++	memset(&sinfo, 0, sizeof(sinfo));
++	get_slabinfo(s, &sinfo);
++
++	memcg_accumulate_slabinfo(s, &sinfo);
++
++	printk("Weiwei Jia - %-17s %6lu %6lu %6u %4u %4d",
++		   cache_name(s), sinfo.active_objs, sinfo.num_objs, s->size,
++		   sinfo.objects_per_slab, (1 << sinfo.cache_order));
++
++	printk(" : tunables %4u %4u %4u",
++		   sinfo.limit, sinfo.batchcount, sinfo.shared);
++	printk(" : slabdata %6lu %6lu %6lu",
++		   sinfo.active_slabs, sinfo.num_slabs, sinfo.shared_avail);
++	//__slabinfo_show_stats(s);
++	printk("\n");
++}
++
+ static int slab_show(struct seq_file *m, void *p)
+ {
+ 	struct kmem_cache *s = list_entry(p, struct kmem_cache, list);
+@@ -1122,6 +1172,20 @@
+ 	return 0;
+ }
+ 
++//added by Weiwei Jia for CS680 course
++void __slab_show(void)
++{
++	struct kmem_cache *s;
++
++	__print_slabinfo_header();
++	mutex_lock(&slab_mutex);
++	list_for_each_entry(s, &slab_caches, list) {
++		__cache_show(s);
++	}
++	mutex_unlock(&slab_mutex);
++	return;
++}
++
+ #ifdef CONFIG_MEMCG_KMEM
+ int memcg_slab_show(struct seq_file *m, void *p)
+ {
+diff -Nur linux-4.4.2/mm/slab.h linux-4.4.2_hw5/mm/slab.h
+--- linux-4.4.2/mm/slab.h	2016-02-17 15:31:25.000000000 -0500
++++ linux-4.4.2_hw5/mm/slab.h	2016-02-27 15:02:00.683827541 -0500
+@@ -370,5 +370,9 @@
+ void *slab_next(struct seq_file *m, void *p, loff_t *pos);
+ void slab_stop(struct seq_file *m, void *p);
+ int memcg_slab_show(struct seq_file *m, void *p);
++//added by Weiwei Jia
++void __cache_show(struct kmem_cache *s);
++void __slab_show(void);
++void __slabinfo_show_stats(struct kmem_cache *s); //added by Weiwei Jia
+ 
+ #endif /* MM_SLAB_H */
