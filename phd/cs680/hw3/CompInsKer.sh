@@ -6,6 +6,7 @@
 # http://www.cyberciti.biz/tips/compiling-linux-kernel-26.html
 # http://mitchtech.net/compile-linux-kernel-on-ubuntu-12-04-lts-detailed/
 
+#3-part dependencies
 sudo apt-get install git-core libncurses5 libncurses5-dev libelf-dev asciidoc binutils-dev build-essential gcc
 sudo apt-get linux-source libncurses5 libncurses5-dev fakeroot build-essential crash kexec-tools makedumpfile kernel-wedge kernel-package
 sudo apt-get install libssl-dev
@@ -21,9 +22,11 @@ sudo make localmodconfig
 
 sudo make menuconfig
 sudo make -j5
-sudo make modules -j5
+sudo make modules
 sudo make modules_install
 sudo make install
+
+# This may be changed for different distros.
 sudo update-grub2
 
 sudo reboot
