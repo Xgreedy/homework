@@ -1,0 +1,173 @@
+diff -Nur linux-4.4.4/include/linux/kthread.h linux-4.4.4_changed/include/linux/kthread.h
+--- linux-4.4.4/include/linux/kthread.h	2016-03-03 18:10:04.000000000 -0500
++++ linux-4.4.4_changed/include/linux/kthread.h	2016-03-06 22:04:12.076339575 -0500
+@@ -50,6 +50,8 @@
+ void kthread_parkme(void);
+ 
+ int kthreadd(void *unused);
++//added by Weiwei Jia for CS680 homework #6
++int __my_kernel_thread(void *data);
+ extern struct task_struct *kthreadd_task;
+ extern int tsk_fork_get_node(struct task_struct *tsk);
+ 
+diff -Nur linux-4.4.4/init/main.c linux-4.4.4_changed/init/main.c
+--- linux-4.4.4/init/main.c	2016-03-03 18:10:04.000000000 -0500
++++ linux-4.4.4_changed/init/main.c	2016-03-06 22:04:03.792133774 -0500
+@@ -383,9 +383,74 @@
+ 
+ static __initdata DECLARE_COMPLETION(kthreadd_done);
+ 
++//added by Weiwei Jia for CS680 homework #6
++#if 0
++static int my_kernel_kthread_create(void *data) {
++	printk("Weiwei Jia - my_kernel_kthread_create - %s\n", (char *) data);
++//	while(1) {
++//	}
++	return 0;
++}
++#endif
++
++//added by Weiwei Jia for CS680 homework #6
++//static void my_kernel_thread_create_1(void);
++//static void my_kernel_thread_create_2(void);
++
++#if 0
++//added by Weiwei Jia for CS680 homework #6
++static int m_k_t_do_something_2(void *data){
++	struct task_struct *curtask = current;
++	strcpy(curtask->comm, "Weiwei Jia: m_k_t_do_something_2");
++	set_task_state(curtask, TASK_RUNNING);
++	printk(KERN_NOTICE "Weiwei Jia: m_k_t_do_something_2 is about to be scheduled.\n");
++	local_irq_enable();
++	schedule();
++	local_irq_disable();
++	printk(KERN_NOTICE "Weiwei Jia: m_k_t_do_something_2 is now scheduled.\n");
++	return 0;
++}
++#endif
++
++//added by Weiwei Jia for CS680 homework #6
++static void my_kernel_thread_create_1(void){
++	int mypid;
++	printk(KERN_NOTICE "Weiwei Jia: Calling kernel_thread(wwj_kernel_thread_1)\n");
++	mypid = kernel_thread(&__my_kernel_thread, "wwj_ktd_1", CLONE_FS | CLONE_FILES | CLONE_SIGHAND);
++	printk(KERN_NOTICE "Weiwei Jia: wwj_kernel_thread_1 = %d\n", mypid);
++	return;
++}
++
++//added by Weiwei Jia for CS680 homework #6
++static void my_kernel_thread_create_2(void){
++	int mypid;
++	printk(KERN_NOTICE "Weiwei Jia: Calling kernel_thread(wwj_kernel_thread_2)\n");
++	mypid = kernel_thread(&__my_kernel_thread, "wwj_ktd_2", CLONE_FS | CLONE_FILES | CLONE_SIGHAND);
++	printk(KERN_NOTICE "Weiwei Jia: wwj_kernel_thread_2 = %d\n", mypid);
++	return;
++}
++
++//added by Weiwei Jia for CS680 homework #6
++static void __ps(void) {
++	struct task_struct *ps;
++	printk("Weiwei Jia - UID\tPID\tPPID\tCMD\n");
++	ps = current;
++	printk("Weiwei Jia -------------------------------------------------------------------\n");
++	read_lock(&tasklist_lock);
++	for_each_process(ps) {
++		printk("Weiwei Jia - %d\t%d\t%d\t%s\n", ps->loginuid.val, ps->pid, ps->parent->pid, ps->comm);
++	}
++	read_unlock(&tasklist_lock);
++	printk("Weiwei Jia -------------------------------------------------------------------\n");
++	return;
++}
++
+ static noinline void __init_refok rest_init(void)
+ {
+ 	int pid;
++	struct task_struct *my_thread1;
++	struct task_struct *my_thread2;
++	struct task_struct *my_thread3;
+ 
+ 	rcu_scheduler_starting();
+ 	smpboot_thread_init();
+@@ -402,6 +467,29 @@
+ 	rcu_read_unlock();
+ 	complete(&kthreadd_done);
+ 
++	//added by Weiwei Jia
++	printk(KERN_NOTICE "Weiwei Jia - CS680 homework #6, start ...\n");
++	printk(KERN_NOTICE "Weiwei Jia: two threads are about to be created by kernel_thread func.\n");
++#if 1
++	my_kernel_thread_create_1();
++	my_kernel_thread_create_2();
++	printk(KERN_NOTICE "Weiwei Jia: two threads are created by kernel_thread func.\n");
++
++	printk(KERN_NOTICE "Weiwei Jia: three threads are about to be created by kthread_create func.\n");
++	my_thread1 = kthread_create(&__my_kernel_thread, "K_C_1", "WeiweiJ-KC1");
++	wake_up_process(my_thread1);
++	my_thread2 = kthread_create(&__my_kernel_thread, "K_C_2", "WeiweiJ-KC2");
++	wake_up_process(my_thread2);
++	my_thread3 = kthread_create(&__my_kernel_thread, "K_C_3", "WeiweiJ-KC3");
++	wake_up_process(my_thread3);
++	printk(KERN_INFO "Weiwei Jia - This is %s\n", my_thread1->comm);
++	printk(KERN_INFO "Weiwei Jia - This is %s\n", my_thread2->comm);
++	printk(KERN_INFO "Weiwei Jia - This is %s\n", my_thread3->comm);
++	printk(KERN_NOTICE "Weiwei Jia: three threads are created by kthread_create func.\n");
++#endif
++	__ps();
++	printk(KERN_NOTICE "Weiwei Jia - CS680 homework #6, end ...\n");
++
+ 	/*
+ 	 * The boot idle thread must execute schedule()
+ 	 * at least once to get things moving:
+@@ -929,6 +1017,8 @@
+ 
+ static noinline void __init kernel_init_freeable(void);
+ 
++
++
+ static int __ref kernel_init(void *unused)
+ {
+ 	int ret;
+diff -Nur linux-4.4.4/kernel/kthread.c linux-4.4.4_changed/kernel/kthread.c
+--- linux-4.4.4/kernel/kthread.c	2016-03-03 18:10:04.000000000 -0500
++++ linux-4.4.4_changed/kernel/kthread.c	2016-03-06 22:04:23.500623383 -0500
+@@ -499,6 +499,40 @@
+ }
+ EXPORT_SYMBOL(kthread_stop);
+ 
++//added by Weiwei Jia for CS680 homework #6
++int __my_kernel_thread(void *data){
++	struct task_struct *curtask = current;
++	set_task_comm(curtask, (char *) data);
++	ignore_signals(curtask);
++	set_cpus_allowed_ptr(curtask, cpu_all_mask);
++	set_mems_allowed(node_states[N_MEMORY]);
++	//__set_task_state(curtask, TASK_RUNNING);
++	printk(KERN_NOTICE "Weiwei Jia: %s is being scheduled.\n", (char *) data);
++	for (;;) {
++		set_current_state(TASK_INTERRUPTIBLE);
++		if (list_empty(&kthread_create_list))
++			schedule();
++		__set_current_state(TASK_RUNNING);
++
++		spin_lock(&kthread_create_lock);
++		while (!list_empty(&kthread_create_list)) {
++			struct kthread_create_info *create;
++
++			create = list_entry(kthread_create_list.next,
++					    struct kthread_create_info, list);
++			list_del_init(&create->list);
++			spin_unlock(&kthread_create_lock);
++
++			create_kthread(create);
++
++			spin_lock(&kthread_create_lock);
++		}
++		spin_unlock(&kthread_create_lock);
++	}
++
++	return 0;
++}
++
+ int kthreadd(void *unused)
+ {
+ 	struct task_struct *tsk = current;
