@@ -1,4 +1,15 @@
-diff -Nur linux-4.4.4/include/linux/kthread.h linux-4.4.4_changed/include/linux/kthread.h
+diff -uNr linux-4.4.4/arch/ia64/include/asm/processor.h linux-4.4.4_changed/arch/ia64/include/asm/processor.h
+--- linux-4.4.4/arch/ia64/include/asm/processor.h	2016-03-03 18:10:04.000000000 -0500
++++ linux-4.4.4_changed/arch/ia64/include/asm/processor.h	2016-03-27 20:04:29.203993919 -0400
+@@ -202,6 +202,7 @@
+ 	unsigned int ptce_count[2];
+ 	unsigned int ptce_stride[2];
+ 	struct task_struct *ksoftirqd;	/* kernel softirq daemon for this CPU */
++	struct task_struct *my_ksoftirqd;	/* kernel softirq daemon for this CPU */
+ 
+ #ifdef CONFIG_SMP
+ 	unsigned long loops_per_jiffy;
+diff -uNr linux-4.4.4/include/linux/kthread.h linux-4.4.4_changed/include/linux/kthread.h
 --- linux-4.4.4/include/linux/kthread.h	2016-03-03 18:10:04.000000000 -0500
 +++ linux-4.4.4_changed/include/linux/kthread.h	2016-03-06 22:04:12.076339575 -0500
 @@ -50,6 +50,8 @@
@@ -10,7 +21,7 @@ diff -Nur linux-4.4.4/include/linux/kthread.h linux-4.4.4_changed/include/linux/
  extern struct task_struct *kthreadd_task;
  extern int tsk_fork_get_node(struct task_struct *tsk);
  
-diff -Nur linux-4.4.4/init/main.c linux-4.4.4_changed/init/main.c
+diff -uNr linux-4.4.4/init/main.c linux-4.4.4_changed/init/main.c
 --- linux-4.4.4/init/main.c	2016-03-03 18:10:04.000000000 -0500
 +++ linux-4.4.4_changed/init/main.c	2016-03-06 22:04:03.792133774 -0500
 @@ -383,9 +383,74 @@
@@ -127,7 +138,7 @@ diff -Nur linux-4.4.4/init/main.c linux-4.4.4_changed/init/main.c
  static int __ref kernel_init(void *unused)
  {
  	int ret;
-diff -Nur linux-4.4.4/kernel/kthread.c linux-4.4.4_changed/kernel/kthread.c
+diff -uNr linux-4.4.4/kernel/kthread.c linux-4.4.4_changed/kernel/kthread.c
 --- linux-4.4.4/kernel/kthread.c	2016-03-03 18:10:04.000000000 -0500
 +++ linux-4.4.4_changed/kernel/kthread.c	2016-03-06 22:04:23.500623383 -0500
 @@ -499,6 +499,40 @@
@@ -171,3 +182,125 @@ diff -Nur linux-4.4.4/kernel/kthread.c linux-4.4.4_changed/kernel/kthread.c
  int kthreadd(void *unused)
  {
  	struct task_struct *tsk = current;
+diff -uNr linux-4.4.4/kernel/softirq.c linux-4.4.4_changed/kernel/softirq.c
+--- linux-4.4.4/kernel/softirq.c	2016-03-03 18:10:04.000000000 -0500
++++ linux-4.4.4_changed/kernel/softirq.c	2016-03-27 20:03:47.402879210 -0400
+@@ -56,6 +56,8 @@
+ static struct softirq_action softirq_vec[NR_SOFTIRQS] __cacheline_aligned_in_smp;
+ 
+ DEFINE_PER_CPU(struct task_struct *, ksoftirqd);
++//added by Weiwei Jia
++DEFINE_PER_CPU(struct task_struct *, my_ksoftirqd);
+ 
+ const char * const softirq_to_name[NR_SOFTIRQS] = {
+ 	"HI", "TIMER", "NET_TX", "NET_RX", "BLOCK", "BLOCK_IOPOLL",
+@@ -72,9 +74,14 @@
+ {
+ 	/* Interrupts are disabled: no need to stop preemption */
+ 	struct task_struct *tsk = __this_cpu_read(ksoftirqd);
++	//added by Weiwei Jia
++	struct task_struct *my_tsk = __this_cpu_read(my_ksoftirqd);
+ 
+ 	if (tsk && tsk->state != TASK_RUNNING)
+ 		wake_up_process(tsk);
++	
++	if (my_tsk && my_tsk->state != TASK_RUNNING)
++		wake_up_process(my_tsk);
+ }
+ 
+ /*
+@@ -651,6 +658,13 @@
+ 	return local_softirq_pending();
+ }
+ 
++//added by Weiwei Jia
++static int my_ksoftirqd_should_run(unsigned int cpu)
++{
++	printk("999dbg, Enter my ksoftirqd should run!\n");
++	return local_softirq_pending();
++}
++
+ static void run_ksoftirqd(unsigned int cpu)
+ {
+ 	local_irq_disable();
+@@ -667,6 +681,26 @@
+ 	local_irq_enable();
+ }
+ 
++
++//added by Weiwei Jia
++static void my_run_ksoftirqd(unsigned int cpu)
++{
++	printk("999dbg, Enter my run ksoftirqd\n");
++	local_irq_disable();
++	if (local_softirq_pending()) {
++		/*
++		 * We can safely run softirq on inline stack, as we are not deep
++		 * in the task stack here.
++		 */
++		__do_softirq();
++		local_irq_enable();
++		cond_resched_rcu_qs();
++		return;
++	}
++	local_irq_enable();
++}
++
++
+ #ifdef CONFIG_HOTPLUG_CPU
+ /*
+  * tasklet_kill_immediate is called to remove a tasklet which can already be
+@@ -740,6 +774,22 @@
+ 	return NOTIFY_OK;
+ }
+ 
++//added by Weiwei Jia
++static int my_cpu_callback(struct notifier_block *nfb, unsigned long action,
++			void *hcpu)
++{
++	printk("999dbg, my cpu callback!\n");
++	switch (action) {
++#ifdef CONFIG_HOTPLUG_CPU
++	case CPU_DEAD:
++	case CPU_DEAD_FROZEN:
++		takeover_tasklets((unsigned long)hcpu);
++		break;
++#endif /* CONFIG_HOTPLUG_CPU */
++	}
++	return NOTIFY_OK;
++}
++
+ static struct notifier_block cpu_nfb = {
+ 	.notifier_call = cpu_callback
+ };
+@@ -751,6 +801,30 @@
+ 	.thread_comm		= "ksoftirqd/%u",
+ };
+ 
++//added by Weiwei Jia
++static struct notifier_block my_cpu_nfb = {
++	.notifier_call = my_cpu_callback
++};
++
++static struct smp_hotplug_thread my_softirq_threads = {
++	.store			= &my_ksoftirqd,
++	.thread_should_run	= my_ksoftirqd_should_run,
++	.thread_fn		= my_run_ksoftirqd,
++	.thread_comm		= "my_ksoftirqd/%u",
++};
++
++static __init int my_spawn_ksoftirqd(void)
++{
++	printk("999dbg, Enter my spawn ksoftirqd\n");
++	register_cpu_notifier(&my_cpu_nfb);
++
++	BUG_ON(smpboot_register_percpu_thread(&my_softirq_threads));
++
++	return 0;
++}
++early_initcall(my_spawn_ksoftirqd);
++//ended by Weiwei Jia
++
+ static __init int spawn_ksoftirqd(void)
+ {
+ 	register_cpu_notifier(&cpu_nfb);

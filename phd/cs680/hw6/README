@@ -1,0 +1,2 @@
+I have only one core in my Virtual machine so it shows me only one my_ksoftirq on core 0.
+This patch has added Softirqd and workqueues is the same as softirqd.
