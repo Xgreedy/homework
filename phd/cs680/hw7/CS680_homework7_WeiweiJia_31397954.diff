@@ -1,0 +1,93 @@
+diff -Nur linux-4.4.4/include/linux/sched.h linux-4.4.4_changed/include/linux/sched.h
+--- linux-4.4.4/include/linux/sched.h	2016-03-03 18:10:04.000000000 -0500
++++ linux-4.4.4_changed/include/linux/sched.h	2016-04-03 16:53:46.789107373 -0400
+@@ -166,6 +166,9 @@
+ 
+ extern unsigned long total_forks;
+ extern int nr_threads;
++//added by Weiwei Jia
++//extern int thread_nums;
++//extern int cs_counter_;
+ DECLARE_PER_CPU(unsigned long, process_counts);
+ extern int nr_processes(void);
+ extern unsigned long nr_running(void);
+diff -Nur linux-4.4.4/init/main.c linux-4.4.4_changed/init/main.c
+--- linux-4.4.4/init/main.c	2016-03-03 18:10:04.000000000 -0500
++++ linux-4.4.4_changed/init/main.c	2016-04-03 16:57:55.524411506 -0400
+@@ -383,6 +383,10 @@
+ 
+ static __initdata DECLARE_COMPLETION(kthreadd_done);
+ 
++//added by Weiwei Jia
++extern int thread_nums;
++extern int cs_counter_;
++
+ static noinline void __init_refok rest_init(void)
+ {
+ 	int pid;
+@@ -394,6 +398,8 @@
+ 	 * the init task will end up wanting to create kthreads, which, if
+ 	 * we schedule it before we create kthreadd, will OOPS.
+ 	 */
++	thread_nums = 1; //added by Weiwei Jia
++	cs_counter_ = 0; // added by Weiwei Jia
+ 	kernel_thread(kernel_init, NULL, CLONE_FS);
+ 	numa_default_policy();
+ 	pid = kernel_thread(kthreadd, NULL, CLONE_FS | CLONE_FILES);
+Binary files linux-4.4.4/init/.main.c.swp and linux-4.4.4_changed/init/.main.c.swp differ
+diff -Nur linux-4.4.4/kernel/fork.c linux-4.4.4_changed/kernel/fork.c
+--- linux-4.4.4/kernel/fork.c	2016-03-03 18:10:04.000000000 -0500
++++ linux-4.4.4_changed/kernel/fork.c	2016-04-03 16:52:39.579039369 -0400
+@@ -106,6 +106,10 @@
+ 
+ int max_threads;		/* tunable limit on nr_threads */
+ 
++//added by Weiwei Jia to record thread numbers
++extern int cs_counter_;
++int thread_nums = 0;
++
+ DEFINE_PER_CPU(unsigned long, process_counts) = 0;
+ 
+ __cacheline_aligned DEFINE_RWLOCK(tasklist_lock);  /* outer */
+@@ -1745,6 +1749,11 @@
+ 
+ 		wake_up_new_task(p);
+ 
++	//added by Weiwei Jia for CS680 homework #7
++	thread_nums += 1; //TODO: mutex should be here???
++	printk("Weiwei Jia - thread creation time is %lld, pid is %d, name is %s, CS number is %ld, number is %d, global CS number is %d\n",
++			p->start_time, p->pid, p->comm, p->nvcsw, thread_nums, cs_counter_);
++
+ 		/* forking complete and child started to run, tell ptracer */
+ 		if (unlikely(trace))
+ 			ptrace_event_pid(trace, pid);
+diff -Nur linux-4.4.4/kernel/sched/core.c linux-4.4.4_changed/kernel/sched/core.c
+--- linux-4.4.4/kernel/sched/core.c	2016-03-03 18:10:04.000000000 -0500
++++ linux-4.4.4_changed/kernel/sched/core.c	2016-04-03 16:53:00.611691716 -0400
+@@ -3100,6 +3100,10 @@
+  *
+  * WARNING: must be called with preemption disabled!
+  */
++
++//added by Weiwei Jia
++int cs_counter_ = 0;
++extern int thread_nums;
+ static void __sched notrace __schedule(bool preempt)
+ {
+ 	struct task_struct *prev, *next;
+@@ -3178,6 +3182,15 @@
+ 
+ 		trace_sched_switch(preempt, prev, next);
+ 		rq = context_switch(rq, prev, next); /* unlocks the rq */
++		/*start, added by Weiwei Jia for CS680 homework #7*/
++		cs_counter_ += 1;
++        //printk("Weiwei Jia - conext switch happened here------------------>\n");
++	//	printk("Weiwei Jia - previous thread creation time is %lld, thread pid is %d, thread name is %s, context switch number is %ld, thread number is %d, context switch number is %d\n",
++	//			prev->start_time, prev->pid, prev->comm, prev->nvcsw, thread_nums, cs_counter_);
++		printk("Weiwei Jia - CS: [%s] switches to [%s], thread number is %d, global CS number is %d\n",
++				prev->comm, next->comm, thread_nums, cs_counter_);
++		if (cs_counter_ > 100) printk("Weiwei Jia - context switch number has exceeded the threshold!\n");
++		/*end, added by Weiwei Jia for CS680 homework #7*/
+ 		cpu = cpu_of(rq);
+ 	} else {
+ 		lockdep_unpin_lock(&rq->lock);

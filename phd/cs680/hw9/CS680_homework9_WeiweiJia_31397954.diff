@@ -1,0 +1,141 @@
+diff -uNr linux-4.5.1/fs/proc/Makefile linux-4.5.1_changed/fs/proc/Makefile
+--- linux-4.5.1/fs/proc/Makefile	2016-04-12 11:57:08.000000000 -0400
++++ linux-4.5.1_changed/fs/proc/Makefile	2016-04-17 20:11:48.185192090 -0400
+@@ -21,6 +21,7 @@
+ proc-y	+= uptime.o
+ proc-y	+= version.o
+ proc-y	+= softirqs.o
++proc-y	+= mysoftirqs.o
+ proc-y	+= namespaces.o
+ proc-y	+= self.o
+ proc-y	+= thread_self.o
+diff -uNr linux-4.5.1/fs/proc/mysoftirqs.c linux-4.5.1_changed/fs/proc/mysoftirqs.c
+--- linux-4.5.1/fs/proc/mysoftirqs.c	1969-12-31 19:00:00.000000000 -0500
++++ linux-4.5.1_changed/fs/proc/mysoftirqs.c	2016-04-17 20:11:40.757002397 -0400
+@@ -0,0 +1,54 @@
++/*
++ * mysoftirq.c
++ *
++ * For CS680 homework #9
++ *
++ * Weiwei Jia <wj47@njit.edu> (C) 2016
++ */
++
++#include <linux/init.h>
++#include <linux/kernel_stat.h>
++#include <linux/proc_fs.h>
++#include <linux/seq_file.h>
++
++/*
++ * /proc/mysoftirqs  ... display the number of softirqs
++ */
++static int show_mysoftirqs(struct seq_file *p, void *v)
++{
++	int i, j;
++
++	seq_puts(p, "Weiwei Jia - /proc/mysoftirqs for CS680 homework #9");
++	seq_putc(p, '\n');
++	seq_puts(p, "                    ");
++	for_each_possible_cpu(i)
++		seq_printf(p, "CPU%-8d", i);
++	seq_putc(p, '\n');
++
++	for (i = 0; i < NR_SOFTIRQS; i++) {
++		seq_printf(p, "%12s:", mysoftirq_to_name[i]);
++		for_each_possible_cpu(j)
++			seq_printf(p, " %10u", kstat_mysoftirqs_cpu(i, j));
++		seq_putc(p, '\n');
++	}
++	return 0;
++}
++
++static int mysoftirqs_open(struct inode *inode, struct file *file)
++{
++	return single_open(file, show_mysoftirqs, NULL);
++}
++
++static const struct file_operations proc_mysoftirqs_operations = {
++	.open		= mysoftirqs_open,
++	.read		= seq_read,
++	.llseek		= seq_lseek,
++	.release	= single_release,
++};
++
++static int __init proc_mysoftirqs_init(void)
++{
++	proc_create("mysoftirqs", 0, NULL, &proc_mysoftirqs_operations);
++	return 0;
++}
++fs_initcall(proc_mysoftirqs_init);
+diff -uNr linux-4.5.1/include/linux/interrupt.h linux-4.5.1_changed/include/linux/interrupt.h
+--- linux-4.5.1/include/linux/interrupt.h	2016-04-12 11:57:08.000000000 -0400
++++ linux-4.5.1_changed/include/linux/interrupt.h	2016-04-17 20:10:55.027833936 -0400
+@@ -430,6 +430,9 @@
+  */
+ extern const char * const softirq_to_name[NR_SOFTIRQS];
+ 
++/*added by Weiwei Jia for CS680 homework #9*/
++extern const char * const mysoftirq_to_name[NR_SOFTIRQS];
++
+ /* softirq mask and active fields moved to irq_cpustat_t in
+  * asm/hardirq.h to get better cache usage.  KAO
+  */
+diff -uNr linux-4.5.1/include/linux/kernel_stat.h linux-4.5.1_changed/include/linux/kernel_stat.h
+--- linux-4.5.1/include/linux/kernel_stat.h	2016-04-12 11:57:08.000000000 -0400
++++ linux-4.5.1_changed/include/linux/kernel_stat.h	2016-04-17 20:10:41.867497441 -0400
+@@ -38,6 +38,8 @@
+ struct kernel_stat {
+ 	unsigned long irqs_sum;
+ 	unsigned int softirqs[NR_SOFTIRQS];
++	//added by Weiwei Jia for CS680 homework #9
++	unsigned int mysoftirqs[NR_SOFTIRQS];
+ };
+ 
+ DECLARE_PER_CPU(struct kernel_stat, kstat);
+@@ -59,11 +61,23 @@
+ 	__this_cpu_inc(kstat.softirqs[irq]);
+ }
+ 
++//added by Weiwei Jia for CS680 homework #9
++static inline void kstat_incr_mysoftirqs_this_cpu(unsigned int irq)
++{
++	__this_cpu_inc(kstat.mysoftirqs[irq]);
++}
++
+ static inline unsigned int kstat_softirqs_cpu(unsigned int irq, int cpu)
+ {
+        return kstat_cpu(cpu).softirqs[irq];
+ }
+ 
++//added by Weiwei Jia for CS680 homework #9
++static inline unsigned int kstat_mysoftirqs_cpu(unsigned int irq, int cpu)
++{
++       return kstat_cpu(cpu).mysoftirqs[irq];
++}
++
+ /*
+  * Number of interrupts per specific IRQ source, since bootup
+  */
+diff -uNr linux-4.5.1/kernel/softirq.c linux-4.5.1_changed/kernel/softirq.c
+--- linux-4.5.1/kernel/softirq.c	2016-04-12 11:57:08.000000000 -0400
++++ linux-4.5.1_changed/kernel/softirq.c	2016-04-17 20:11:16.684387446 -0400
+@@ -57,6 +57,11 @@
+ 
+ DEFINE_PER_CPU(struct task_struct *, ksoftirqd);
+ 
++const char * const mysoftirq_to_name[NR_SOFTIRQS] = {
++	"HI", "TIMER", "NET_TX", "NET_RX", "BLOCK", "BLOCK_IOPOLL",
++	"TASKLET", "SCHED", "HRTIMER", "RCU"
++};
++
+ const char * const softirq_to_name[NR_SOFTIRQS] = {
+ 	"HI", "TIMER", "NET_TX", "NET_RX", "BLOCK", "BLOCK_IOPOLL",
+ 	"TASKLET", "SCHED", "HRTIMER", "RCU"
+@@ -268,6 +273,7 @@
+ 		prev_count = preempt_count();
+ 
+ 		kstat_incr_softirqs_this_cpu(vec_nr);
++		kstat_incr_mysoftirqs_this_cpu(vec_nr); //added by Weiwei Jia for CS680 homework #9
+ 
+ 		trace_softirq_entry(vec_nr);
+ 		h->action(h);
