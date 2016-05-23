@@ -8,7 +8,7 @@
 
 #3-part dependencies
 sudo apt-get install git-core libncurses5 libncurses5-dev libelf-dev asciidoc binutils-dev build-essential gcc
-sudo apt-get linux-source libncurses5 libncurses5-dev fakeroot build-essential crash kexec-tools makedumpfile kernel-wedge kernel-package
+sudo apt-get install linux-source libncurses5 libncurses5-dev fakeroot build-essential crash kexec-tools makedumpfile kernel-wedge kernel-package
 sudo apt-get install libssl-dev
 
 wget https://cdn.kernel.org/pub/linux/kernel/v4.x/linux-4.4.1.tar.xz
