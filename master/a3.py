@@ -17,8 +17,6 @@
 
 from a3_support import *
 
-import logging
-
 
 # End of support code
 ################################################################################
@@ -63,7 +61,7 @@ class SimpleTileApp(object):
 
 def task1():
     # Add task 1 GUI instantiation code here
-    logging.info("This is task one")
+    print("This is task one")
     pass
 
 
