@@ -1,0 +1,24 @@
+GIT
+===
+For maintainer
+# git clone git@github.com:HarryWei/netcos.git
+# git branch -D dawei
+# git checkout -b dawei origin/dawei
+# git checkout master
+# git merge dawei
+
+# git checkout -b dawei origin/dawei
+# git checkout master
+# git pull
+# git checkout dawei
+# git merge master
+Do some changes
+# git push origin dawei:dawei
+
+For contributor
+Once
+# git clone git@github.com:HarryWei/netcos.git
+# git checkout -b dawei origin/dawei
+# git add
+# git commit -m "commit note"'
+# git push origin dawei:dawei

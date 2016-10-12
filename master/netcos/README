@@ -1,0 +1,20 @@
+Network Controller System
+=========================
+1, Pre-distribute the socket handlers between master
+   node and slave nodes so that it would accelerate
+   the time of sending packages.
+
+2, According to the priority of sending jobs, they could
+   get to a new balance after adjust the management algorithm.
+
+3, The advantages of which the system is based on current
+   H/W and S/W but not the realtime H/W and S/W are we
+   could not require users to substitute their H/W and
+   S/W with realtime ones sometimes (The condition may not
+   be allowed).
+
+Above three points are the nuts of this project.
+
+Quick Install
+=============
+See INSTALL file for details

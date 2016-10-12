@@ -1,0 +1,17 @@
+INSTALL fabric (for debian)
+===========================
+# aptitude install python-dev
+# aptitude install python-pip
+# pip install fabric
+
+INSTALL netcos
+==============
+# fab install
+
+Run netcos (on master node)
+===========================
+# ncs-cluster init --master
+
+Run netcos (on slave node)
+==========================
+# ncs-cluster init --slave

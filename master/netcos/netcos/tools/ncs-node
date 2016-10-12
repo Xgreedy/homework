@@ -1,0 +1,10 @@
+#!/usr/bin/python
+
+import sys
+import netcos.client.ncs_node as main
+
+if hasattr(main, "commands"):
+  commands = main.commands
+
+if __name__ == "__main__":
+  sys.exit(main.Main())
