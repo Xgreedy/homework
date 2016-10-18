@@ -9,7 +9,7 @@
 #
 ################################################################################
 
-# VERSION 1.0.0
+# VERSION 1.0.1
 
 ################################################################################
 #
@@ -49,8 +49,8 @@ class SimpleTileApp(object):
         """
         Run when a swap on the grid happens.
         """
-        print(
-            "SimplePlayer made a swap from {} to {}!".format(from_pos, to_pos))
+        print("SimplePlayer made a swap from {} to {}!".format(
+            from_pos, to_pos))
 
     def _handle_score(self, score):
         """
@@ -61,7 +61,7 @@ class SimpleTileApp(object):
 
 def task1():
     # Add task 1 GUI instantiation code here
-    print("This is task one")
+    print("Hello Wrold")
     pass
 
 

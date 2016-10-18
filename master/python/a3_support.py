@@ -1,3 +1,5 @@
+# VERSION 1.0.1
+
 import itertools
 import bisect
 import random
@@ -97,6 +99,7 @@ ENEMY_HEALTH_RANGE = .8, 1.25
 ENEMY_HEALTH_DELTA = 200
 ENEMY_ATTACK_DELTA = 40
 
+
 def generate_enemy_stats(level):
     """
     Generates health and attack stats for an enemy found on a given level.
@@ -115,6 +118,7 @@ def generate_enemy_stats(level):
     health *= random.uniform(*ENEMY_HEALTH_RANGE)
 
     return int(health), attack
+
 
 class WeightedTable:
     """Provides random choice between multiple items, according to their
@@ -352,8 +356,6 @@ class Span:
             ((width, height), (horizontal skew), (vertical skew))
 
         get_dimensions(Span) -> ((int, int), (int, int))
-
-
         """
         v_skew = abs(self._distances[NORTH] - self._distances[SOUTH])
         h_skew = abs(self._distances[EAST] - self._distances[WEST])
@@ -560,7 +562,8 @@ class TileGrid(EventEmitter):
     def __init__(self, types, rows=GRID_SIZE, columns=GRID_SIZE):
         """
         Constructor(WeightedTable, int, int)
-        :param types: A WeightedTable of the probability of generating each tile.
+        :param types: An iterable (i.e. list) containing
+                      (type, probability of generating) pairs.
         :param rows: The number of rows in the grid.
         :param columns: The number of columns in this grid.
         """
@@ -583,9 +586,9 @@ class TileGrid(EventEmitter):
         """
         rows, columns = self._size
 
-        for i in range(rows):
+        for i in reversed(range(rows)):
             for j in range(columns):
-                self._cells[i][j] = self.generate_cell()
+                self._cells[i][j] = self.generate_cell_at(j)
 
         # Remove runs
         for run in self.find_runs():
@@ -614,11 +617,12 @@ class TileGrid(EventEmitter):
 
                 run.remove(dominant)
 
-    def generate_cell(self):
+    def generate_cell_at(self, column):
         """
         Returns a randomly generated tile.
 
-        TileGrid.generate_cell(TileGrid) -> Tile
+        TileGrid.generate_cell_at(TileGrid, int) -> Tile
+        :param column: The column the cell will be generated at.
         """
         return Tile(self._types.choose())
 
@@ -688,6 +692,22 @@ class TileGrid(EventEmitter):
             for j in range(columns):
                 yield ((i, j), self._cells[i][j])
 
+    def generate_refills(self, empty_columns):
+        """
+        Generates cells to refill empty columns.
+
+        :param empty_columns:
+        :return: 2D list, list at index i holds the refills for column i. Inner
+                 list contains Tile instances according to length of
+                 empty_columns i. Tiles generated earlier are earlier in list.
+        """
+        ref = [
+            list((
+                [self.generate_cell_at(column) for i in range(removed)]))
+            for column, removed in enumerate(empty_columns)]
+
+        return ref
+
     def swap(self, from_pos, to_pos):
         """
         Swaps the cells at the given (row, column) positions.
@@ -724,8 +744,7 @@ class TileGrid(EventEmitter):
 
                 # print("Need to generate: {}".format(empty))
 
-                new_per_col = [[self.generate_cell() for i in range(removed)]
-                               for removed in empty]
+                new_per_col = self.generate_refills(empty)
 
                 # drop cells
                 drops = {}
@@ -734,6 +753,8 @@ class TileGrid(EventEmitter):
 
                     minimum = -len(rows)
                     replacements = []
+
+                    new_per_col[column].reverse()
 
                     if minimum < 0:
                         replacements = [i for i in range(minimum, rows[-1] + 1)
@@ -762,7 +783,7 @@ class TileGrid(EventEmitter):
                 if not len(results):
                     break
 
-                self.emit('run', runs_num, runs)
+                self.emit('runs', runs_num, runs)
 
                 yield results, deleted_per_col, new_per_col
 
@@ -787,7 +808,7 @@ class TileGrid(EventEmitter):
     #
     #     return path
 
-    def find_runs(self, positions=None):
+    def find_runs(self, positions=None, validator=lambda cell: True):
         """
         Finds runs in this TileGrid that start at each position in positions.
         If position is None, all positions in this grid are considered.
@@ -813,6 +834,9 @@ class TileGrid(EventEmitter):
 
             while len(S):
                 v = S.pop()
+
+                if not validator(v):
+                    continue
 
                 if v not in run:
                     run.add(v)
@@ -1172,6 +1196,7 @@ class SimpleGame(EventEmitter):
         - score (score):
             When a score has been earned.
     """
+
     def __init__(self):
         """
         Constructor()
@@ -1179,7 +1204,7 @@ class SimpleGame(EventEmitter):
         super().__init__()
 
         self._grid = TileGrid(TILE_PROBABILITIES)
-        self._grid.on('run', self._handle_runs)
+        self._grid.on('runs', self._handle_runs)
         self._grid.on('swap', self._handle_swap)
         self._grid.on('swap_resolution', self._handle_swap_resolution)
 
@@ -1229,7 +1254,7 @@ class SimpleGame(EventEmitter):
         score *= (runs_number + 1)
 
         self.emit('score', score)
-        self.emit('run', runs)
+        self.emit('runs', runs)
 
     def reset(self):
         """
