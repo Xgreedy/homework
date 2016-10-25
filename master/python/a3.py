@@ -84,21 +84,21 @@ class SimpleTileApp(object):
     def reset_swaps(self):
         self.swap_count = 0
 
-class SimpleStatusBar(object):
-    def __init__(self, master):
+class SimpleStatusBar(SimpleTileApp):
+    def __init__(self, player):
         """
         Constructor(SimpleStatusBar, tk.Frame)
         """
-        self._master = master
+        #self._master = master
         #self._frame = tk.Frame(self._master)
         #self._frame.pack(side=tk.TOP)
         
-        self.score = master.get_score()
+        self.score = player.get_score()
         l_score = tk.Label(self._master, text="Score: %d" %self.score)
         l_score.pack(side=tk.LEFT)
 
         
-        self.count = master.get_swaps()
+        self.count = player.get_swaps()
         l_count = tk.Label(self._master, text="Swap NO.: %d" %self.count)
         l_count.pack(side=tk.RIGHT)
 
