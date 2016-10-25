@@ -25,19 +25,6 @@ from a3_support import *
 
 # Write your classes here (including import statements, etc.)
 
-class SimpleStatusBar(object):
-    def __init__(self, master):
-        """
-        Constructor(SimpleStatusBar, tk.Frame)
-        """
-        self._master = master
-        self._frame = tk.Frame(self._master)
-        self._frame.pack()
-        
-        self.score = master.get_score()
-        l_score = tk.Label(self._frame, textvariable=self.score, relief=tk.RAISED)
-        l_socre.pack(side=tk.LEFT)
-
 
 class SimpleTileApp(object):
     def __init__(self, master):
@@ -97,12 +84,26 @@ class SimpleTileApp(object):
     def reset_swaps(self):
         self.swap_count = 0
 
+class SimpleStatusBar(object):
+    def __init__(self, master, score, swap_count):
+        """
+        Constructor(SimpleStatusBar, tk.Frame)
+        """
+        self._master = master
+        self._frame = tk.Frame(self._master)
+        self._frame.pack()
+        
+        #self.score = master.get_score()
+        #l_score = tk.Label(self._frame, textvariable=self.score, relief=tk.RAISED)
+        #l_socre.pack(side=tk.LEFT)
+
+
 def task1():
     # Add task 1 GUI instantiation code here
     print ("Hello World")
     top = tk.Tk()
     player = SimpleTileApp(top)
-    bar = SimpleStatusBar(top)
+    bar = SimpleStatusBar(player)
     """
     player.add_score(9001)
     player.reset_score()
