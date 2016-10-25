@@ -32,11 +32,11 @@ class SimpleStatusBar(object):
         """
         self._master = master
         self._frame = tk.Frame(self._master)
-        self.text = tk.Text(self._frame)
-        self.text.insert(INSERT, "Score: ")
-        self.text.insert(INSERT, "Swap NO.: ")
-        self.text.pack()
         self._frame.pack()
+        
+        self.score = self._master.get_score()
+        l_score = tk.Label(self._frame, textvariable=self.score, relief=tk.RAISED)
+        l_socre.pack(side=tk.LEFT)
 
 
 class SimpleTileApp(object):
