@@ -103,7 +103,7 @@ def task1():
     print ("Hello World")
     top = tk.Tk()
     player = SimpleTileApp(top)
-    bar = SimpleStatusBar(player)
+    bar = SimpleStatusBar(top)
     """
     player.add_score(9001)
     player.reset_score()
