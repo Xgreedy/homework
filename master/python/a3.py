@@ -9,7 +9,7 @@
 #
 ################################################################################
 
-# VERSION 1.0.1
+# VERSION 1.0.2
 
 ################################################################################
 #
@@ -42,8 +42,12 @@ class SimpleTileApp(object):
             master, self._game.get_grid(),
             width=GRID_WIDTH, height=GRID_HEIGHT, bg='black')
         self._grid_view.pack(side=tk.TOP, expand=True, fill=tk.BOTH)
-
+        
         # Add your code here
+
+        self.score = 0
+        self.swap_count = 0
+
 
     def _handle_swap(self, from_pos, to_pos):
         """
@@ -58,10 +62,41 @@ class SimpleTileApp(object):
         """
         print("SimplePlayer scored {}!".format(score))
 
+    def add_score(self, score):
+        self.score = self.score + score
+        print("score is", self.score)
+
+    def get_score(self):
+        return self.score
+
+    def reset_score(self):
+        self.score = 0
+
+    def record_swap(self):
+        self.swap_count = self.swap_count + 1
+
+    def get_swaps(self):
+        return self.swap_count
+
+    def reset_swaps(self):
+        self.swap_count = 0
 
 def task1():
     # Add task 1 GUI instantiation code here
-    print("Hello Wrold")
+    print ("Hello World")
+    top = tk.Tk()
+    player = SimpleTileApp(top)
+    player.add_score(9001)
+    player.reset_score()
+    score = player.get_score()
+    print("score is", score)
+    player.record_swap()
+    count = player.get_swaps()
+    print("count is", count)
+    player.reset_swaps()
+    count = player.get_swaps()
+    print("count is", count)
+    top.mainloop()
     pass
 
 

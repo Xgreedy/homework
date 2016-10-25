@@ -1,4 +1,4 @@
-# VERSION 1.0.1
+# VERSION 1.0.2
 
 import itertools
 import bisect
@@ -126,7 +126,7 @@ class WeightedTable:
 
     def __init__(self, items):
         """
-        Constructor(dict(*: num))
+        Constructor(list(tuple(*, num)))
 
         Precondition: each value in items is >= 0
         """
@@ -393,7 +393,7 @@ class Run:
 
     def __init__(self, cells):
         """
-        Constructor()
+        Constructor(dict(*: *))
         """
         self._cells = cells
         self._pm = GridManager()
@@ -1191,7 +1191,7 @@ class SimpleGame(EventEmitter):
             When a swap is initiated.
         - swap_resolution (from_pos, to_pos):
             When a swap has been completely resolved.
-        - run (run_number, runs):
+        - runs (runs):
             When a group of runs has been detected and is about to be removed.
         - score (score):
             When a score has been earned.
