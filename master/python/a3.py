@@ -89,18 +89,22 @@ class SimpleStatusBar(SimpleTileApp):
         """
         Constructor(SimpleStatusBar, tk.Frame)
         """
-        #self._master = master
+        self._master = player
         #self._frame = tk.Frame(self._master)
         #self._frame.pack(side=tk.TOP)
         
-        self.score = player.get_score()
+        #player._game.on('swap', self._handle_swap)
+        player._game.on('score', self._handle_score)
+    
+    def display_score(self):
+        self.score = self._master.get_score()
         l_score = tk.Label(player._master, text="Score: %d" %self.score)
         l_score.pack(side=tk.LEFT)
 
         
-        self.count = player.get_swaps()
-        l_count = tk.Label(player._master, text="Swap NO.: %d" %self.count)
-        l_count.pack(side=tk.RIGHT)
+        #self.count = player.get_swaps()
+        #l_count = tk.Label(player._master, text="Swap NO.: %d" %self.count)
+        #l_count.pack(side=tk.RIGHT)
 
 
 def task1():
