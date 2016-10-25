@@ -34,7 +34,7 @@ class SimpleStatusBar(object):
         self._frame = tk.Frame(self._master)
         self._frame.pack()
         
-        self.score = self._master.get_score()
+        self.score = master.get_score()
         l_score = tk.Label(self._frame, textvariable=self.score, relief=tk.RAISED)
         l_socre.pack(side=tk.LEFT)
 
