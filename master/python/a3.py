@@ -107,23 +107,12 @@ def task1():
     # Add task 1 GUI instantiation code here
     print ("Hello World")
     top = tk.Tk()
-    player = SimpleTileApp(top)
-    score = player.get_score()
-    count = player.get_swaps()
-    bar = SimpleStatusBar(top, score, count)
-    """
-    player.add_score(9001)
-    player.reset_score()
-    score = player.get_score()
-    print("score is", score)
-    player.record_swap()
-    count = player.get_swaps()
-    print("count is", count)
-    player.reset_swaps()
-    count = player.get_swaps()
-    print("count is", count)
-    """
-    top.mainloop()
+    while True:
+        player = SimpleTileApp(top)
+        score = player.get_score()
+        count = player.get_swaps()
+        bar = SimpleStatusBar(top, score, count)
+        top.mainloop()
     pass
 
 
