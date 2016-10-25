@@ -85,7 +85,7 @@ class SimpleTileApp(object):
         self.swap_count = 0
 
 class SimpleStatusBar(object):
-    def __init__(self, master, score, swap_count):
+    def __init__(self, master):
         """
         Constructor(SimpleStatusBar, tk.Frame)
         """
