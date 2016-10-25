@@ -108,7 +108,7 @@ class SimpleStatusBar(SimpleTileApp):
         self.score = self._master.get_score()
         self.l_score.config(text="Score: %d" %self.score)
 
-    def display_swap(self, swap):
+    def display_swap(self, from_pos, to_pos):
         self.count = self._master.get_swaps()
         self.l_count.config(text="Swap NO.: %d" %self.count)
         
