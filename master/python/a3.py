@@ -25,6 +25,15 @@ from a3_support import *
 
 # Write your classes here (including import statements, etc.)
 
+class SimpleStatusBar(object):
+    def __init__(self, master):
+        """
+        Constructor(SimpleStatusBar, tk.Frame)
+        """
+        self._master = master
+        self._frame = Frame(self._master)
+        self._frame.pack()
+
 
 class SimpleTileApp(object):
     def __init__(self, master):
@@ -53,6 +62,7 @@ class SimpleTileApp(object):
         """
         Run when a swap on the grid happens.
         """
+        self.record_swap()
         print("SimplePlayer made a swap from {} to {}!".format(
             from_pos, to_pos))
 
@@ -60,6 +70,7 @@ class SimpleTileApp(object):
         """
         Run when a score update happens.
         """
+        self.add_score(score)
         print("SimplePlayer scored {}!".format(score))
 
     def add_score(self, score):
@@ -86,6 +97,8 @@ def task1():
     print ("Hello World")
     top = tk.Tk()
     player = SimpleTileApp(top)
+    bar = SimpleStatusBar(top)
+    """
     player.add_score(9001)
     player.reset_score()
     score = player.get_score()
@@ -96,6 +109,7 @@ def task1():
     player.reset_swaps()
     count = player.get_swaps()
     print("count is", count)
+    """
     top.mainloop()
     pass
 
