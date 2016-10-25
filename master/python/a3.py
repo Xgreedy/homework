@@ -94,12 +94,12 @@ class SimpleStatusBar(SimpleTileApp):
         #self._frame.pack(side=tk.TOP)
         
         self.score = player.get_score()
-        l_score = tk.Label(self._master, text="Score: %d" %self.score)
+        l_score = tk.Label(player._master, text="Score: %d" %self.score)
         l_score.pack(side=tk.LEFT)
 
         
         self.count = player.get_swaps()
-        l_count = tk.Label(self._master, text="Swap NO.: %d" %self.count)
+        l_count = tk.Label(player._master, text="Swap NO.: %d" %self.count)
         l_count.pack(side=tk.RIGHT)
 
 
