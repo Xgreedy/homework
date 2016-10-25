@@ -94,8 +94,13 @@ class SimpleStatusBar(object):
         self._frame.pack(side=tk.TOP)
         
         self.score = score
-        l_score = tk.Label(self._frame, text="score:")
+        l_score = tk.Label(self._frame, text="Score:")
         l_score.pack(side=tk.LEFT)
+
+        
+        self.count = count
+        l_count = tk.Label(self._frame, text="Swap NO.:")
+        l_count.pack(side=tk.RIGHT)
 
 
 def task1():
