@@ -31,7 +31,7 @@ class SimpleStatusBar(object):
         Constructor(SimpleStatusBar, tk.Frame)
         """
         self._master = master
-        self._frame = Frame(self._master)
+        self._frame = tk.Frame(self._master)
         self._frame.pack()
 
 
