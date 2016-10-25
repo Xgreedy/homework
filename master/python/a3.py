@@ -32,6 +32,10 @@ class SimpleStatusBar(object):
         """
         self._master = master
         self._frame = tk.Frame(self._master)
+        self.text = tk.Text(self._frame)
+        self.text.insert(INSERT, "Score: ")
+        self.text.insert(INSERT, "Swap NO.: ")
+        self.text.pack()
         self._frame.pack()
 
 
@@ -41,6 +45,7 @@ class SimpleTileApp(object):
         Constructor(SimpleTileApp, tk.Frame)
         """
         self._master = master
+        self._master.title("Puzzle Game")
 
         self._game = SimpleGame()
 
