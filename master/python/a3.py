@@ -93,13 +93,15 @@ class SimpleStatusBar(SimpleTileApp):
         #self._frame = tk.Frame(self._master)
         #self._frame.pack(side=tk.TOP)
         
+        self.score = self._master.get_score()
+        self.l_score = tk.Label(self._master._master, text="Score: %d" %self.score)
+        self.l_score.pack(side=tk.LEFT)
         #player._game.on('swap', self._handle_swap)
         player._game.on('score', self.display_score)
     
     def display_score(self, score):
         self.score = self._master.get_score()
-        l_score = tk.Label(self._master._master, text="Score: %d" %self.score)
-        l_score.pack(side=tk.LEFT)
+        self.l_score.config(text="Score: %d" %self.score)
         #l_score.destroy()
 
         
