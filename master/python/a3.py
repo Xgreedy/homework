@@ -96,18 +96,22 @@ class SimpleStatusBar(SimpleTileApp):
         self.score = self._master.get_score()
         self.l_score = tk.Label(self._master._master, text="Score: %d" %self.score)
         self.l_score.pack(side=tk.LEFT)
-        #player._game.on('swap', self._handle_swap)
+        
+        self.count = self._master.get_swaps()
+        self.l_count = tk.Label(self._master._master, text="Swap NO.: %d" %self.count)
+        self.l_count.pack(side=tk.RIGHT)
+        
+        player._game.on('swap', self.display_swap)
         player._game.on('score', self.display_score)
     
     def display_score(self, score):
         self.score = self._master.get_score()
         self.l_score.config(text="Score: %d" %self.score)
-        #l_score.destroy()
 
+    def display_swap(self, swap):
+        self.count = self._master.get_swaps()
+        self.l_count.config(text="Swap NO.: %d" %self.count)
         
-        #self.count = player.get_swaps()
-        #l_count = tk.Label(player._master, text="Swap NO.: %d" %self.count)
-        #l_count.pack(side=tk.RIGHT)
 
 
 def task1():
