@@ -91,11 +91,11 @@ class SimpleStatusBar(object):
         """
         self._master = master
         self._frame = tk.Frame(self._master)
-        self._frame.pack()
+        self._frame.pack(side=tk.TOP)
         
         self.score = score
-        l_score = tk.Label(self._frame, textvariable=self.score, relief=tk.RAISED)
-        l_socre.pack(side=tk.LEFT)
+        l_score = tk.Label(self._frame, text="score:")
+        l_score.pack(side=tk.LEFT)
 
 
 def task1():
