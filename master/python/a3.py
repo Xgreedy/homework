@@ -99,7 +99,10 @@ class SimpleStatusBar(SimpleTileApp):
         
         self.count = self._master.get_swaps()
         self.l_count = tk.Label(self._master._master, text="Swap NO.: %d" %self.count)
-        self.l_count.pack(side=tk.RIGHT)
+        self.l_count.pack(side=tk.LEFT)
+
+        self.button = tk.Button(self._master._master, text = "Reset", command = self.reset_bar)
+        self.button.pack(side=tk.RIGHT)
         
         player._game.on('swap', self.display_swap)
         player._game.on('score', self.display_score)
@@ -111,7 +114,14 @@ class SimpleStatusBar(SimpleTileApp):
     def display_swap(self, from_pos, to_pos):
         self.count = self._master.get_swaps()
         self.l_count.config(text="Swap NO.: %d" %self.count)
-        
+
+    def reset_bar(self):
+        self._master.reset_score()
+        self._master.reset_swaps()
+        self.score = self._master.get_score()
+        self.l_score.config(text="Score: %d" %self.score)
+        self.count = self._master.get_swaps()
+        self.l_count.config(text="Swap NO.: %d" %self.count)
 
 
 def task1():
