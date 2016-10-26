@@ -32,7 +32,7 @@ class SimpleTileApp(object):
         Constructor(SimpleTileApp, tk.Frame)
         """
         self._master = master
-        self._master.title("Puzzle Game")
+        self._master.title("Simple Tile Game")
 
         self._game = SimpleGame()
 
@@ -103,6 +103,18 @@ class SimpleStatusBar(SimpleTileApp):
 
         self.button = tk.Button(self._master._master, text = "Reset", command = self.reset_bar)
         self.button.pack(side=tk.RIGHT)
+
+        self.menubar = tk.Menu(self._master._master)
+        self.filemenu = tk.Menu(self.menubar, tearoff=0)
+        self.filemenu.add_command(label="New Game", command=self.new_game)
+        
+        self.filemenu.add_separator()
+        self.filemenu.add_command(label="Exit", command=self._master._master.quit)
+        self.menubar.add_cascade(label="File", menu=self.filemenu)
+
+        self.helpmenu = tk.Menu(self.menubar, tearoff=0)
+        self.helpmenu.add_command(label="About", command=self.help_game)
+        self.menubar.add_cascade(label="Help", menu=self.helpmenu)
         
         player._game.on('swap', self.display_swap)
         player._game.on('score', self.display_score)
@@ -122,6 +134,13 @@ class SimpleStatusBar(SimpleTileApp):
         self.l_score.config(text="Score: %d" %self.score)
         self.count = self._master.get_swaps()
         self.l_count.config(text="Swap NO.: %d" %self.count)
+
+    def new_game(self):
+        #self._master._game.reset()
+        self.reset_bar()
+
+    def help_game(self):
+        pass
 
 
 def task1():
@@ -144,6 +163,7 @@ def task1():
     count = player.get_swaps()
     print("count is", count)
     """
+    top.config(menu=bar.menubar)
     top.mainloop()
     pass
 
