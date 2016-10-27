@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python3
 ################################################################################
 #
@@ -48,7 +49,6 @@ class SimpleTileApp(object):
 
         self.score = 0
         self.swap_count = 0
-
 
     def _handle_swap(self, from_pos, to_pos):
         """
@@ -167,7 +167,107 @@ def task1():
     top.mainloop()
     pass
 
+class Character(SimpleTileApp):
+    def __init__(self,max_health):
+        self._max_health = max_health
+        
+    def get_max_health(self):
+        return self._max_health
+    
+    def get_health(self):
+        return self._max_health
 
+    def lose_health(self,amount):
+        self._current_health = self._max_health - amount
+
+    def gain_health(self, amount):
+        self._max_health = self._current_health + amount
+
+    def reset_health(self):
+        self._current_health = max_health
+
+class Enemy(Character):
+        def __init__(self, type, max_health, attack):
+            super().__init__(max_health)
+            self._type = type
+            self._attack = attack
+            a,b = self._attack
+        
+        def get_type(self):
+            return self._type
+
+        def attack(self):
+            a,b = self._attack
+            return random.randint(a,b)
+            #return random.randrange(a,b)
+
+class Player(Character):
+        def __init__(self, max_health, swaps_per_turn, base_attack):
+            super().__init__(max_health)
+            self._swap_per_turn = swaps_per_turn
+            self._base_attack = base_attack
+
+        def record_swap(self):
+            self._swap_per_turn = self._swap_per_turn -1
+            if self._swap_per_turn > -1:
+                return self._swap_per_turn
+            else:
+                return 0
+
+        def get_swaps(self):
+            return self._swap_per_turn
+
+        def reset_swaps(self): 
+            pass
+        
+        def attack(self, runs, defender_type):
+            self._base_attack = base_attack
+            #runs = [Run(defender_type),]
+            return [(self._defender_type1),(self._defender_type2)]
+        
+class VersusStatusBar(tk.Frame):
+        def __init__(self,master):
+
+            super().__init__(master)
+            self._new_player_health = 0
+            self._new_enemy_health = 0 
+            self._new_num_of_swaps = 0
+            self._label1 = tk.Label(master, text = "current Level:1", bg = 'white')
+            self._label1.pack()
+            self._label2 = tk.Label(master, text = "Player Health:0", bg = 'white')
+            self._label2.pack(side = tK.LEFT)
+            self._label3 = tk.Label(master, text = "Enemy Health:0", bg = 'white')
+            self._label3.pack(side = tK.LEFT)
+            self._label4 = tk.Label(master, text = "Number of swaps:0", bg = 'white')
+            self._label4.pack(side = tK.LEFT)
+        
+        def update_health_player(self,score):
+            self._new_player_health += score
+            pass
+
+        def update_health_enemy(self):
+            pass
+        
+class SinglePlayerTileApp(SimpleTileApp):
+        def __init__(self,master):
+            self._master = master
+            self._text = tk.Text(master)
+            self._game = SimpleGame
+            self._game.on('swap',self._handle_swap)
+            self._game.on('score',self._handle_score)
+
+            self._grid_view = TileGridView(
+                    master.self._game.get_grid(),
+                    width = GRID_WIDTH, height = GRID_HEIGHT,bg = 'black')
+            self._grid_view.pack(side=tk.TOP,expand = True, fill = tk.BOTH)
+
+            self._master.title(Level1)
+            menubar = tk.Menu(master)
+            master.config (menu = menubar)
+            self.filemenu = tk.Menu(self.menubar, tearoff=0)
+            self.menubar.add_cascade(label="File", menu=self.filemenu)
+            self.filemenu.add_command(label="New Game", command=self.new_game)
+            self.filemenu.add_command(label="Exit", command=self.exit)
 def task2():
     # Add task 2 GUI instantiation code here
     pass
