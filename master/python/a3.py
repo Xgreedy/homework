@@ -167,7 +167,124 @@ def task1():
     top.mainloop()
     pass
 
+class Character(SimpleTileApp):
+    def __init__(self,max_health):
+        self._max_health = max_health
+        
+    def get_max_health(self):
+        return self._max_health
+    
+    def get_health(self):
+        return self._max_health
 
+    def lose_health(self,amount):
+        self._current_health = self._max_health - amount
+
+    def gain_health(self, amount):
+        self._max_health = self._current_health + amount
+
+    def reset_health(self):
+        self._current_health = max_health
+
+class Enemy(Character):
+        def __init__(self, type, max_health, attack):
+            super().__init__(max_health)
+            self._type = type
+            self._attack = attack
+            a,b = self._attack
+        
+        def get_type(self):
+            return self._type
+
+        def attack(self):
+            a,b = self._attack
+            return random.randint(a,b)
+            #return random.randrange(a,b)
+
+class Player(Character):
+        def __init__(self, max_health, swaps_per_turn, base_attack):
+            super().__init__(max_health)
+            self._swap_per_turn = swaps_per_turn
+            self._base_attack = base_attack
+
+        def record_swap(self):
+            self._swap_per_turn = self._swap_per_turn -1
+            if self._swap_per_turn > -1:
+                return self._swap_per_turn
+            else:
+                return 0
+
+        def get_swaps(self):
+            return self._swap_per_turn
+
+        def reset_swaps(self): 
+            pass
+        
+        def attack(self, runs, defender_type):
+            self._base_attack = base_attack
+            #runs = [Run(defender_type),]
+            return [(self._defender_type1),(self._defender_type2)]
+        
+class VersusStatusBar(tk.Frame):
+        def __init__(self,master):
+            self._current_level_lbl = tk.Label(self,text = LEVEL_FORMAT.format(1))
+            self._current_level_lbl.pack(side = tk.TOP, expand =1, fill = tk.X)
+
+            self._StatusFrame = tk.Frame(self)
+            self._StatusFrame.pack(side = tk.TOP, expand =1, fill = tk.X)
+
+            self._player_health = tk.Label(self._StatusFrame,text = "Player's" + HEALTH_FORMAT.format(PLAYER_BASE_HEALTH))
+            self._playe_health.pack(side = tk.LEFT, expand =1, fill = tk.X)
+
+            self._swaps_num = tk.Label(self._statusFrame,text=SWAPS_LEFT_FORMAT.format(SWAPS_PER_TURN, 's'))
+            self._swaps_num.pack(side = tk.LEFT, expand =1, fill = tk.X)
+
+            self._enemy_health = tk.Label(self._StatusFrame,text = "Enemy's" + HEALTH_FORMAT.format(0))
+            self._enemy_health.pack(side = tk.RIGHT, expand =1, fill = tk.X)
+
+            self._healthBar = tk.Frame(self)
+            self._healthBar.pack(side = tk.TOP,expand =1, fill = tk.X)
+
+            self._playerBar = tk.Label(self._healthBar,bg = 'red',width = 30)
+            self._playerBar.pack(side = tk.LEFT)
+
+            self._enemyBar = tk.Label(self._healthBar,bg = 'blue',width = 30)
+            self._playerBar.pack(side = tk.RIGHT)
+            
+        
+        def draw_tile_sprite(self, xy_pos,tile,chosen):
+            colour = tile.get_colour()
+            self._image = self._pic[colour]
+
+            width, height = self._calculate_tile_size(xy_pos,selected)
+            x,y = xy_pos
+
+            if chosen == False:
+                return self.create_image(x,y,image = self.image)
+            else:
+                self._resize =self._resize = self._image.zoom(2,2)
+                return self.create_image(x,y,image = self._resize)
+        
+class SinglePlayerTileApp(SimpleTileApp):
+        def __init__(self,master):
+            self._master = master
+            self._text = tk.Text(master)
+            self._game = SimpleGame
+            self._game.on('swap',self._handle_swap)
+            self._game.on('score',self._handle_score)
+
+            self._grid_view = TileGridView(
+                    master.self._game.get_grid(),
+                    width = GRID_WIDTH, height = GRID_HEIGHT,bg = 'black')
+            self._grid_view.pack(side=tk.TOP,expand = True, fill = tk.BOTH)
+
+            self._master.title(Level1)
+            menubar = tk.Menu(master)
+            master.config (menu = menubar)
+            self.filemenu = tk.Menu(self.menubar, tearoff=0)
+            self.menubar.add_cascade(label="File", menu=self.filemenu)
+            self.filemenu.add_command(label="New Game", command=self.new_game)
+            self.filemenu.add_command(label="Exit", command=self.exit)
 def task2():
     # Add task 2 GUI instantiation code here
     pass
